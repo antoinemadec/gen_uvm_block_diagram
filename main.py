@@ -2,6 +2,50 @@
 
 from tree_sitter import Language, Parser
 import glob
+from PIL import Image, ImageDraw
+
+
+class DrawClass(object):
+    """DrawClass print block diagram based on a class tree"""
+
+    def __init__(self, class_tree):
+        self.w, self.h = 800, 800
+        self.margin = 20
+        self.root_coords = ((0, 0), (self.w-1, self.h-1))
+        self.img = Image.new("RGB", (self.w, self.h))
+        self.class_tree = class_tree
+
+    def show(self):
+        self.img.show()
+
+    def draw(self, coords, text, color="#ffff99"):
+        print(f"{coords} {text}")
+        img1 = ImageDraw.Draw(self.img)
+        img1.rectangle(coords, fill=color, outline="red")
+        img1.text(coords[0], text, fill="black")
+
+    def get_coords(self, parent_coords, sibling_nb):
+        if parent_coords == self.root_coords and sibling_nb == 1:
+            margin = 0
+        else:
+            margin = self.margin
+        ((x0, y0), (x1, y1)) = parent_coords
+        dx = ((x1-x0-margin) // sibling_nb)
+        X0 = x0 + margin
+        Y0 = y0 + margin
+        Y1 = y1 - margin
+        return [((X0+dx*i, Y0), (X0+dx*(i+1)-margin, Y1)) for i in range(sibling_nb)]
+
+    def print_tree(self, tree=[], parent_coords=()):
+        if parent_coords == ():
+            parent_coords = self.root_coords
+            tree = self.class_tree
+        sibling_coords = self.get_coords(parent_coords, len(tree))
+        for i, sibling in enumerate(tree):
+            self.draw(sibling_coords[i], f"{sibling['name']}")
+            properties = sibling['properties']
+            if len(properties):
+                self.print_tree(properties, sibling_coords[i])
 
 
 class SVClass:
@@ -15,13 +59,22 @@ class SVClass:
     def get_type_without_param(self, type):
         return type.split()[0].split('#')[0]
 
-    def print_tree(self, level=0):
+    def get_tree(self, level=0):
+        prop_trees = []
         for p in self.properties:
             type, _ = p
-            print(f"{level*'  '} {p}")
             type_without_param = self.get_type_without_param(type)
             if type_without_param in self.class_dict and level < 10:
-                self.class_dict[type_without_param].print_tree(level + 1)
+                prop_trees += self.class_dict[type_without_param].get_tree(
+                    level + 1)
+        return [{'type': self.type, 'name': self.name, 'properties': prop_trees}]
+
+    def print_tree(self, tree=[], level=0):
+        if level == 0:
+            tree = self.get_tree()
+        for sibling in tree:
+            print(f"{level*'  '}{sibling['type']} {sibling['name']}")
+            self.print_tree(sibling['properties'], level+1)
 
 
 class SVFileParser:
@@ -109,4 +162,11 @@ for file in glob.glob('./include/*'):
         classes[cl.name] = cl
 
 SVClass.class_dict = classes
-classes['my_test'].print_tree()
+root_class = classes['my_test']
+tree = root_class.get_tree()
+print(tree)
+root_class.print_tree()
+
+dc = DrawClass(tree)
+dc.print_tree()
+dc.show()
