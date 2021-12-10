@@ -10,11 +10,25 @@ class DrawClass:
         self.root_coords = ((0, 0), (self.w-1, self.h-1))
         self.img = Image.new("RGB", (self.w, self.h))
         self.class_tree = class_tree
+        self.type_colors = {
+            "uvm_test": "#928374",
+            "uvm_env": "#80aa9e",
+            "uvm_scoreboard": "#e9b143",
+            "uvm_agent": "#e2cca9",
+        }
+        self.default_colors = {
+                'backgroud': '#7c6f64',
+                'text': '#32302f',
+                'outline': '#32302f',
+                }
 
-    def draw(self, coords, text, color="#ffff99"):
+    def draw(self, coords, text, color=""):
+        c_backgroud = color if color else self.default_colors['backgroud']
+        c_outline = self.default_colors['outline']
+        c_text = self.default_colors['text']
         img1 = ImageDraw.Draw(self.img)
-        img1.rectangle(coords, fill=color, outline="red")
-        img1.text(coords[0], text, fill="black")
+        img1.rectangle(coords, fill=c_backgroud, outline=c_outline)
+        img1.text(coords[0], text, fill=c_text)
 
     def get_coords(self, parent_coords, sibling_nb):
         if parent_coords == self.root_coords and sibling_nb == 1:
@@ -37,7 +51,8 @@ class DrawClass:
         # draw recursively
         sibling_coords = self.get_coords(parent_coords, len(tree))
         for i, sibling in enumerate(tree):
-            self.draw(sibling_coords[i], f"{sibling['name']}")
+            color = self.type_colors.get(sibling['type'], "")
+            self.draw(sibling_coords[i], f"{sibling['name']}", color)
             properties = sibling['properties']
             if len(properties):
                 self.draw_tree(properties, sibling_coords[i])
