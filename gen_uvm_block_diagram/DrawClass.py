@@ -16,14 +16,20 @@ class DrawClass:
             "uvm_scoreboard": "#e9b143",
             "uvm_agent": "#e2cca9",
         }
+        self.type_position = {
+            "uvm_scoreboard": "top",
+        }
         self.default_colors = {
-                'backgroud': '#7c6f64',
-                'text': '#32302f',
-                'outline': '#32302f',
-                }
+            'backgroud': '#7c6f64',
+            'text': '#32302f',
+            'outline': '#32302f',
+        }
+
+    @staticmethod
+    def flip_xy_coord(c):
+        return ((c[0][1], c[0][0]), (c[1][1], c[1][0]))
 
     def draw(self, coords, text, color=""):
-        print(text, coords)
         c_backgroud = color if color else self.default_colors['backgroud']
         c_outline = self.default_colors['outline']
         c_text = self.default_colors['text']
@@ -31,14 +37,37 @@ class DrawClass:
         img1.rectangle(coords, fill=c_backgroud, outline=c_outline)
         img1.text(coords[0], text, fill=c_text)
 
-    def get_coords(self, parent_coords, sibling_nb, no_margin=False):
+    def get_sibling_coords(self, parent_coords, tree, no_margin=False):
+        coords = [((0, 0), (0, 0))]*len(tree)
+        idx_top = [i for (i, sibling) in enumerate(tree) if self.type_position.get(sibling['type'], '') == 'top']
+        idx_middle = [i for (i, sibling) in enumerate(tree) if self.type_position.get(sibling['type'], '') == '']
+        if idx_top:
+            div3_coords = self.divide_rectangle(parent_coords, 3, no_margin, y_div=True)
+            top_parent_coords = div3_coords[0]
+            parent_coords = (div3_coords[1][0], div3_coords[2][1])
+            top_coords = self.divide_rectangle(top_parent_coords, len(idx_top), no_margin)
+            for i in idx_top:
+                coords[i] = top_coords.pop(0)
+        if idx_middle:
+            middle_coords = self.divide_rectangle(parent_coords, len(idx_middle), no_margin)
+            for i in idx_middle:
+                coords[i] = middle_coords.pop(0)
+        return coords
+
+    def divide_rectangle(self, coords, nb, no_margin=False, y_div=False):
+        if y_div:
+            coords = self.flip_xy_coord(coords)
         margin = self.margin if not no_margin else 0
-        ((x0, y0), (x1, y1)) = parent_coords
-        dx = ((x1-x0-margin) // sibling_nb)
+        ((x0, y0), (x1, y1)) = coords
+        dx = ((x1-x0-margin) // nb)
         X0 = x0 + margin
         Y0 = y0 + margin
         Y1 = y1 - margin
-        return [((X0+dx*i, Y0), (X0+dx*(i+1)-margin, Y1)) for i in range(sibling_nb)]
+        new_coords = [((X0+dx*i, Y0), (X0+dx*(i+1)-margin, Y1))
+                      for i in range(nb)]
+        if y_div:
+            new_coords = [self.flip_xy_coord(c) for c in new_coords]
+        return new_coords
 
     def draw_tree(self, tree=[], parent_coords=()):
         is_root = parent_coords == ()
@@ -47,7 +76,8 @@ class DrawClass:
             parent_coords = self.root_coords
             tree = self.class_tree
         # draw recursively
-        sibling_coords = self.get_coords(parent_coords, len(tree), is_root)
+        sibling_coords = self.get_sibling_coords(
+            parent_coords, tree, no_margin=is_root)
         for i, sibling in enumerate(tree):
             color = self.type_colors.get(sibling['type'], "")
             self.draw(sibling_coords[i], f"{sibling['name']}", color)

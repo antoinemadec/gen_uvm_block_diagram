@@ -8,19 +8,22 @@ class SVClass:
     exclude = ["uvm_sequence"]
 
     def __init__(self, name, type, properties):
-        self.name = name
-        self.type = type
+        self.name = self.remove_param_from_string(name)
+        self.type = self.remove_param_from_string(type)
+        self.full_name = name
+        self.full_type = type
         self.properties = properties
 
-    def remove_param_from_string(self, s):
-        return s.split()[0].split('#')[0]
+    @staticmethod
+    def remove_param_from_string(s):
+        return s.split()[0].split('#')[0] if s else ''
 
     def get_tree(self, level=0):
         prop_trees = []
         if self.name in self.exclude or self.type in self.exclude:
             return []
         for p in self.properties:
-            class_name = self.remove_param_from_string(p[0])
+            class_name = p[0]
             if class_name in self.classes and level < 10:
                 prop_trees += self.classes[class_name].get_tree(
                     level + 1)
@@ -78,8 +81,7 @@ class SVFileParser:
 
     def __init__(self, filepath, exclude):
         self.src_code = bytes(open(filepath, 'r').read(), "utf8")
-        self.tree = self.PARSER.parse(self.src_code)
-        self.root_node = self.tree.root_node
+        self.root_node = self.PARSER.parse(self.src_code).root_node
         self.exclude = exclude
 
     def node_str(self, node):
