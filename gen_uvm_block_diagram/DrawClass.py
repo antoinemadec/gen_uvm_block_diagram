@@ -23,6 +23,7 @@ class DrawClass:
                 }
 
     def draw(self, coords, text, color=""):
+        print(text, coords)
         c_backgroud = color if color else self.default_colors['backgroud']
         c_outline = self.default_colors['outline']
         c_text = self.default_colors['text']
@@ -30,11 +31,8 @@ class DrawClass:
         img1.rectangle(coords, fill=c_backgroud, outline=c_outline)
         img1.text(coords[0], text, fill=c_text)
 
-    def get_coords(self, parent_coords, sibling_nb):
-        if parent_coords == self.root_coords and sibling_nb == 1:
-            margin = 0
-        else:
-            margin = self.margin
+    def get_coords(self, parent_coords, sibling_nb, no_margin=False):
+        margin = self.margin if not no_margin else 0
         ((x0, y0), (x1, y1)) = parent_coords
         dx = ((x1-x0-margin) // sibling_nb)
         X0 = x0 + margin
@@ -49,7 +47,7 @@ class DrawClass:
             parent_coords = self.root_coords
             tree = self.class_tree
         # draw recursively
-        sibling_coords = self.get_coords(parent_coords, len(tree))
+        sibling_coords = self.get_coords(parent_coords, len(tree), is_root)
         for i, sibling in enumerate(tree):
             color = self.type_colors.get(sibling['type'], "")
             self.draw(sibling_coords[i], f"{sibling['name']}", color)
