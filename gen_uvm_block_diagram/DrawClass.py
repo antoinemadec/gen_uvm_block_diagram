@@ -15,12 +15,16 @@ class DrawClass:
             "uvm_env": "#80aa9e",
             "uvm_scoreboard": "#e9b143",
             "uvm_agent": "#e2cca9",
+            "uvm_sequencer": "#f28534",
+            "uvm_monitor": "#b0b846",
+            "uvm_driver": "#db4740",
         }
         self.type_position = {
             "uvm_scoreboard": "top",
+            "uvm_sequencer": "top",
         }
         self.default_colors = {
-            'backgroud': '#7c6f64',
+            'backgroud': '#928374',
             'text': '#32302f',
             'outline': '#32302f',
         }

@@ -5,7 +5,7 @@ class SVClass:
     """Represents systemverilog classes, the way to relate to each other"""
 
     classes = {}
-    exclude = ["uvm_sequence"]
+    exclude = ["uvm_sequence", "uvm_sequence_item"]
 
     def __init__(self, name, type, properties):
         self.name = self.remove_param_from_string(name)
@@ -27,7 +27,9 @@ class SVClass:
             if class_name in self.classes and level < 10:
                 prop_trees += self.classes[class_name].get_tree(
                     level + 1)
-        return [{'type': self.type, 'name': self.name, 'properties': prop_trees}]
+            else:
+                prop_trees += [{'name': class_name, 'type': class_name, 'properties': []}]
+        return [{'name': self.name, 'type': self.type, 'properties': prop_trees}]
 
     def print_tree(self, tree=[], level=0):
         if level == 0:
