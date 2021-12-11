@@ -1,6 +1,10 @@
+# Systemverilog Parsers Performance
+https://chipsalliance.github.io/sv-tests-results
+
 # TODO
-1. fix verilog treesitter parser **toto#(foo)::bar()** are not handled properly
-2. only display uvm classes
-3. handle typedef
-3. better rendering (handle arrays, semantic coloring etc)
-4. virtual interfaces
+ - switch parser to either
+  - https://github.com/MikePopoloski/slang
+  - https://github.com/dalance/sv-parser
+ - only display uvm classes
+ - handle typedef
+ - virtual interfaces
