@@ -5,7 +5,7 @@ class SVClass:
     """Represents systemverilog classes, the way to relate to each other"""
 
     classes = {}
-    exclude = ["uvm_sequence", "uvm_sequence_item"]
+    exclude = ["uvm_sequence", "uvm_sequence_item", "uvm_object"]
 
     def __init__(self, name, type, properties):
         self.name = self.remove_param_from_string(name)

@@ -5,8 +5,8 @@ class DrawClass:
     """Draw block diagram based on a class tree"""
 
     def __init__(self, class_tree):
-        self.w, self.h = 800, 800
-        self.margin = 20
+        self.w, self.h = 1920, 1080
+        self.margin = 10
         self.root_coords = ((0, 0), (self.w-1, self.h-1))
         self.img = Image.new("RGB", (self.w, self.h))
         self.class_tree = class_tree
@@ -20,8 +20,13 @@ class DrawClass:
             "uvm_driver": "#db4740",
         }
         self.type_position = {
+            "uvm_test": "middle",
+            "uvm_env": "middle",
             "uvm_scoreboard": "top",
+            "uvm_agent": "middle",
             "uvm_sequencer": "top",
+            "uvm_monitor": "middle",
+            "uvm_driver": "middle",
         }
         self.default_colors = {
             'backgroud': '#928374',
@@ -39,21 +44,41 @@ class DrawClass:
         c_text = self.default_colors['text']
         img1 = ImageDraw.Draw(self.img)
         img1.rectangle(coords, fill=c_backgroud, outline=c_outline)
-        img1.text(coords[0], text, fill=c_text)
+        img1.text((coords[0][0]+self.margin/2, coords[0][1]), text, fill=c_text)
 
     def get_sibling_coords(self, parent_coords, tree, no_margin=False):
         coords = [((0, 0), (0, 0))]*len(tree)
-        idx_top = [i for (i, sibling) in enumerate(tree) if self.type_position.get(sibling['type'], '') == 'top']
-        idx_middle = [i for (i, sibling) in enumerate(tree) if self.type_position.get(sibling['type'], '') == '']
+        idx_top = []
+        idx_mini = []
+        idx_middle = []
+        for i,sibling in enumerate(tree):
+            type_position = self.type_position.get(sibling['type'], 'mini')
+            if type_position == "top":
+                idx_top.append(i)
+            elif type_position == "mini":
+                idx_mini.append(i)
+            elif type_position == "middle":
+                idx_middle.append(i)
         if idx_top:
-            div3_coords = self.divide_rectangle(parent_coords, 3, no_margin, y_div=True)
+            div3_coords = self.divide_rectangle(
+                parent_coords, 3, no_margin, y_div=True)
             top_parent_coords = div3_coords[0]
             parent_coords = (div3_coords[1][0], div3_coords[2][1])
-            top_coords = self.divide_rectangle(top_parent_coords, len(idx_top), no_margin)
+            top_coords = self.divide_rectangle(
+                top_parent_coords, len(idx_top), no_margin)
             for i in idx_top:
                 coords[i] = top_coords.pop(0)
+        if idx_mini:
+            ((x0, y0), (x1, y1)) = parent_coords
+            mini_parent_coords = ((x0, y0+self.margin), (x1, y0+self.margin+30*len(idx_mini)))
+            parent_coords = ((x0, y0+30*len(idx_mini)), (x1, y1))
+            mini_coords = self.divide_rectangle(
+                mini_parent_coords, len(idx_mini), no_margin)
+            for i in idx_mini:
+                coords[i] = mini_coords.pop(0)
         if idx_middle:
-            middle_coords = self.divide_rectangle(parent_coords, len(idx_middle), no_margin)
+            middle_coords = self.divide_rectangle(
+                parent_coords, len(idx_middle), no_margin)
             for i in idx_middle:
                 coords[i] = middle_coords.pop(0)
         return coords
