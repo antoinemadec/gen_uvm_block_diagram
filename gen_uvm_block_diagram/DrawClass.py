@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 
 class DrawClass:
@@ -9,6 +9,7 @@ class DrawClass:
         self.margin = 10
         self.root_coords = ((0, 0), (self.w-1, self.h-1))
         self.img = Image.new("RGB", (self.w, self.h))
+        self.font = ImageFont.truetype("/home/antoine/.fonts/DejaVuSansMono/DejaVu Sans Mono Nerd Font Complete.ttf", 12)
         self.class_tree = class_tree
         self.type_colors = {
             "uvm_test": "#928374",
@@ -44,7 +45,7 @@ class DrawClass:
         c_text = self.default_colors['text']
         img1 = ImageDraw.Draw(self.img)
         img1.rectangle(coords, fill=c_backgroud, outline=c_outline)
-        img1.text((coords[0][0]+self.margin/2, coords[0][1]), text, fill=c_text)
+        img1.text((coords[0][0]+self.margin/2, coords[0][1]), text, fill=c_text, font=self.font)
 
     def get_sibling_coords(self, parent_coords, tree, no_margin=False):
         coords = [((0, 0), (0, 0))]*len(tree)

@@ -7,7 +7,7 @@ from .verible_verilog_syntax import VeribleVerilogSyntax
 
 class SVFileParser:
     parser = VeribleVerilogSyntax(
-        executable="/home/antoine/src/verible-v0.0-1769-g35f00c1f/bin/verible-verilog-syntax")
+        executable="/home/antoine/src/verible-v0.0-2474-g21acfbef/bin/verible-verilog-syntax")
 
     def __init__(self, filepath, exclude):
         data = self.parser.parse_files([filepath])
